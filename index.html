@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html"es">
+<head>
+  <meta charset="UTF-8">
+  <title>Monitoreo Operativo AGV Open Market</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #d0e1f9;
+      padding: 20px;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 5px;
+    }
+    .subtitulo {
+      text-align: center;
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input[type="text"],
+    input[type="time"],
+    input[type="date"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #218838;
+    }
+    .registro {
+      margin-top: 30px;
+    }
+    .registro p {
+      background: #e9ecef;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+    .hidden {
+      display: none;
+    }
+    #btnBorrar {
+      background-color: #dc3545;
+    }
+    #btnBorrar:hover {
+      background-color: #c82333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Monitoreo Operativo AGV Open Market</h2>
+    <div class="subtitulo">C.C.</div>
+    <label for="nombre">Nombre del Conductor</label>
+    <input type="text" id="nombre" placeholder="Ej: tu nombre">
+
+    <label for="destino">Destino</label>
+    <input type="text" id="destino" placeholder="Ej: lugar">
+
+    <label for="hora">Hora</label>
+    <input type="time" id="hora">
+
+    <label for="fecha">Fecha</label>
+    <input type="date" id="fecha">
+
+    <button onclick="guardarDatos()">Guardar</button>
+
+    <hr>
+
+    <label for="clave">Administrador (Clave)</label>
+    <input type="password" id="clave" placeholder="Ingresa clave de admin">
+    <button onclick="verRegistros()">Ver Registros</button>
+
+    <button id="btnBorrar" class="hidden" onclick="borrarRegistros()">Borrar Datos Guardados</button>
+
+    <div class="registro hidden" id="registros"></div>
+  </div>
+
+  <script>
+    // Configurar fecha actual por defecto al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+      const fechaInput = document.getElementById("fecha");
+      if (fechaInput) {
+        const today = new Date();
+        const formattedDate = today.toISOString().substr(0, 10);
+        fechaInput.value = formattedDate;
+      }
+    });
+
+    function guardarDatos() {
+      const nombre = document.getElementById("nombre").value.trim();
+      const destino = document.getElementById("destino").value.trim();
+      const hora = document.getElementById("hora").value;
+      const fecha = document.getElementById("fecha").value;
+
+      if (!nombre || !destino || !hora || !fecha) {
+        alert("Por favor, complete todos los campos.");
+        return;
+      }
+
+      const nuevoRegistro = { nombre, destino, hora, fecha };
+      let registros = JSON.parse(localStorage.getItem("conductores")) || [];
+
+      registros.push(nuevoRegistro);
+      localStorage.setItem("conductores", JSON.stringify(registros));
+
+      document.getElementById("nombre").value = "";
+      document.getElementById("destino").value = "";
+      document.getElementById("hora").value = "";
+      document.getElementById("fecha").value = "";
+
+      alert("Datos guardados correctamente.");
+    }
+
+    function verRegistros() {
+      const clave = document.getElementById("clave").value;
+      const contenedor = document.getElementById("registros");
+      const btnBorrar = document.getElementById("btnBorrar");
+
+      if (clave === "0112") {
+        const registros = JSON.parse(localStorage.getItem("conductores")) || [];
+        contenedor.classList.remove("hidden");
+        btnBorrar.classList.remove("hidden");
+
+        contenedor.innerHTML = "<h3>Registros Guardados:</h3>";
+
+        if (registros.length === 0) {
+          contenedor.innerHTML += "<p>No hay registros.</p>";
+        } else {
+          registros.forEach((r, i) => {
+            contenedor.innerHTML += `
+              <p><strong>${i + 1}.</strong> 
+              Conductor: ${r.nombre}, 
+              Destino: ${r.destino}, 
+              Hora: ${r.hora}, 
+              Fecha: ${r.fecha}</p>
+            `;
+          });
+        }
+      } else {
+        contenedor.classList.add("hidden");
+        btnBorrar.classList.add("hidden");
+        alert("Clave incorrecta. Solo el administrador puede ver o borrar los datos.");
+      }
+    }
+
+    function borrarRegistros() {
+      const confirmacion = confirm("¿Estás seguro de que deseas borrar todos los datos?");
+      if (confirmacion) {
+        localStorage.removeItem("conductores");
+        document.getElementById("registros").innerHTML = "<p>Todos los registros han sido eliminados.</p>";
+        alert("Datos borrados correctamente.");
+      }
+    }
+  </script>
+</body>
+</html>
